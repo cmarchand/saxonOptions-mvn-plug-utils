@@ -34,12 +34,18 @@ import net.sf.saxon.s9api.*;
 import net.sf.saxon.trans.XPathException;
 
 /**
- * Goal which runs any XSpec tests in src/test/xspec
+ * Utility class to set parameters on saxon configuration classes
  *
  * @author <a href="mailto:christophe@marchand.top">Christophe Marchand</a>
  */
 public class SaxonUtils {
     
+    /**
+     * Set the configuration on <tt>Processor</tt> instance.
+     * @param processor The processor to configure
+     * @param saxonOptions The options to set
+     * @throws XPathException If a problem occurs
+     */
     public static void prepareSaxonConfiguration(Processor processor, final SaxonOptions saxonOptions) throws XPathException {
         Configuration config = processor.getUnderlyingConfiguration();
         if(saxonOptions!=null) {
@@ -130,6 +136,10 @@ public class SaxonUtils {
                 Object resolver = config.getInstance(value, null);
                 config.setConfigurationProperty(FeatureKeys.OUTPUT_URI_RESOLVER, resolver);
             }
+            value = saxonOptions.getR();
+            if (value != null) {
+                config.setConfigurationProperty(FeatureKeys.URI_RESOLVER_CLASS, value);
+            }
             // TODO : relocate : this applies only to the compiler
             value = saxonOptions.getOutval();
             if (value != null) {
@@ -152,6 +162,19 @@ public class SaxonUtils {
             if (value != null) {
                 config.setBooleanProperty(FeatureKeys.TRACE_EXTERNAL_FUNCTIONS,"on".equals(value));
             }
+        }
+    }
+    /**
+     * Set the configuration on <tt>XsltCompiler</tt> instance.
+     * <strong>Warning</strong>: the <tt>compiler</tt> should have been created from a <tt>processor</tt> that
+     * has been configured via {@link #prepareSaxonConfiguration(net.sf.saxon.s9api.Processor, top.marchand.maven.saxon.utils.SaxonOptions)}.
+     * @param compiler The compiler to configure
+     * @param saxonOptions The options
+     * @throws XPathException If a problem occurs
+     */
+    public static void configureXsltCompiler(XsltCompiler compiler, final SaxonOptions saxonOptions) throws XPathException {
+        if(saxonOptions.getRelocate()!=null) {
+            compiler.setRelocatable("on".equals(saxonOptions.getRelocate()));
         }
     }
 }
